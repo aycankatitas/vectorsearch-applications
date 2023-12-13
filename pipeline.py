@@ -1,11 +1,23 @@
 # Dataset Creation Functions
+from torch import cuda
+from typing import List, Tuple
+from sentence_transformers import SentenceTransformer
+from llama_index.text_splitter import SentenceSplitter
+from torch import cuda
+import time
+from preprocessing import FileIO
+from tqdm.notebook import tqdm
+import numpy as np
+
+
+
 def create_dataset(corpus: List[dict],
                    embedding_model: SentenceTransformer,
                    text_splitter: SentenceSplitter,
                    file_outpath_prefix: str='./impact-theory-minilmL6',
                    content_field: str='content',
                    embedding_field: str='content_embedding',
-                   device: str='cuda:0' if torch.cuda.is_available() else 'cpu'
+                   device: str='cuda:0' if cuda.is_available() else 'cpu'
                    ) -> None:
     '''
     Given a raw corpus of data, this function creates a new dataset where each dataset
