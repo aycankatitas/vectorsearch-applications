@@ -6,6 +6,7 @@ from typing import List, Union, Callable
 from torch import cuda
 from tqdm import tqdm
 import time
+from huggingface_hub import snapshot_download
 
 class WeaviateClient(Client):
     '''
