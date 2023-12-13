@@ -5,7 +5,7 @@ def create_dataset(corpus: List[dict],
                    file_outpath_prefix: str='./impact-theory-minilmL6',
                    content_field: str='content',
                    embedding_field: str='content_embedding',
-                   device: str='cuda:0' if cuda.is_available() else 'cpu'
+                   device: str='cuda:0' if torch.cuda.is_available() else 'cpu'
                    ) -> None:
     '''
     Given a raw corpus of data, this function creates a new dataset where each dataset
