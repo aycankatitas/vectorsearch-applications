@@ -1,3 +1,5 @@
+.ipynb_checkpoints
+.parquet
 .env
 # Byte-compiled / optimized / DLL files
 __pycache__/

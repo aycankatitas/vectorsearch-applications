@@ -1,4 +1,7 @@
 # Unittests
+import unittest
+from unitesting_utils import load_impact_theory_data
+from pipeline import split_contents, encode_content_splits, join_metadata
 
 class TestSplitContents(unittest.TestCase):
     '''
@@ -61,14 +64,12 @@ class TestEncodeContentSplits(unittest.TestCase):
         self.assertTrue(isinstance(results[0][0][0], str))
         self.assertTrue(isinstance(results[0][0][1], ndarray))
 
-        import unittest
-
-class TestEncodeContentSplits(unittest.TestCase):
+class TestEncodeContentSplitsDF(unittest.TestCase):
     '''
     Unit test to ensure proper functionality of split_contents function
     '''
 
-    def test_encode_content_splits(self):
+    def test_encode_content_splits_df(self):
         import tiktoken
         from numpy import ndarray
         from llama_index.text_splitter import SentenceSplitter
