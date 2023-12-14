@@ -8,8 +8,7 @@ import time
 from preprocessing import FileIO
 from tqdm.notebook import tqdm
 import numpy as np
-import unittest
-from unittest_utils import TestSplitContents, TestEncodeContentSplits, TestEncodeContentSplitsDF
+
 
 from llama_index.finetuning import EmbeddingQAFinetuneDataset
 from retrieval_evaluation import calc_hit_rate_scores, calc_mrr_scores, record_results, add_params
