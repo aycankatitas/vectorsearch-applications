@@ -40,3 +40,4 @@ torch==2.0.1
 tqdm==4.66.1
 transformers==4.33.1
 weaviate-client==3.25.3 
+wikipedia

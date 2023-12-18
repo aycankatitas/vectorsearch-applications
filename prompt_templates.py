@@ -29,7 +29,7 @@ Question:\n
 {question}\n
 Answer the question and provide reasoning if necessary to explain the answer.\n
 If the context does not provide enough information to answer the question, then \n
-state that you cannot answer the question with the provided context.\n
+say "I cannot answer the question given the context", exactly in these words and say only this.\n
 
 Answer:
 '''

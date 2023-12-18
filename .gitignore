@@ -1,6 +1,8 @@
-.ipynb_checkpoints
-.parquet
+retrieverperformance.xlsx
+*.ipynb_checkpoints
+*.parquet
 .env
+*.zip
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
