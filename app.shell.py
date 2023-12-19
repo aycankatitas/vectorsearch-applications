@@ -110,121 +110,133 @@ def main():
     st.subheader(f"Chat with the Impact Theory podcast: ")
     st.write('\n')
     st.write("Select one of the questions below or enter your own question to start searching.")
-    col1, _ = st.columns([7,3])
+    col1, _ = st.columns([8,2])
     with col1:
 
         # Obtain list of suggested questions from CSV
         csv_path = "cuedquestions.csv"
-        file_obj = open(csv_path, 'r')
-        reader = csv.reader(file_obj)
-        suggested_questions = []
-        for item in reader:
-            suggested_questions.append(item[0])
+        with open(csv_path, 'r') as file: 
+            reader = csv.reader(file)
+            suggested_questions = []
+            for item in reader:
+                suggested_questions.append(item[0])
 
-        if 'selected_question' not in st.session_state:
-            st.session_state.selected_question = False
-
-        st.radio(label="Suggested Questions", options=suggested_questions, key="selected_question")
-        st.button(label="Ask Impact Theory Podcast", on_click=fill_suggested_question)
-
-        st.write('\n\n\n\n\n')
-                    
-        st.text_input('Enter your question: ',key="q")
-        st.write('\n\n\n\n\n')
-
-        if st.session_state.q:
-            query = st.session_state.q
-        
-            #st.write('Hmmm...this app does not seem to be working yet.  Please check back later.')
-            #if guest:
-             #   st.write(f'However, it looks like you selected {guest} as a filter.')
-
-            # make hybrid call to weaviate
-            display_properties = ["title", "guest","summary","content","thumbnail_url",
-                                  "episode_url", "length","doc_id","views"]
-            hybrid_response = client.hybrid_search(query,
-                                                   class_name,
-                                                   alpha=alpha_input,
-                                                   display_properties=display_properties,
-                                                   where_filter=guest_filter,
-                                                   limit=retrieval_limit)
-            # rerank results
-            ranked_response = reranker.rerank(hybrid_response,
-                                              query,
-                                              apply_sigmoid=True,
-                                              top_k=reranker_topk)
-            # validate token count is below threshold
-            valid_response = validate_token_threshold(ranked_response,
-                                                      question_answering_prompt_series,
-                                                      query=query,
-                                                      tokenizer= encoding,
-                                                      token_threshold=4000, 
-                                                      verbose=True)
-        
-            # generate LLM prompt
-            prompt = generate_prompt_series(query=query, results=valid_response)
-            
-            # prep for streaming response
-            st.subheader("Response from Impact Theory (context)")
-            with st.spinner('Generating Response...'):
-                st.markdown("----")
-                #creates container for LLM response
-                chat_container, response_box = [], st.empty()
+        #if 'selected_question' not in st.session_state:
+         #   st.session_state.selected_question = False
                 
-                # execute chat call to LLM
+        st.radio(label="Suggested Questions", options=suggested_questions, key="selected_question")
+        user_question = st.text_input('Enter your question: ', key="typed_question")
 
-                for resp in llm.get_chat_completion(prompt=prompt,
-                                                    temperature=temperature_input,
-                                                    max_tokens=500,
-                                                    show_response=True,
-                                                    stream=True):
-                    try:
-                          #inserts chat stream from LLM
-                        with response_box:
-                            content = resp.choices[0].delta.content
-                            if content:
-                                chat_container.append(content)
-                                result = "".join(chat_container).strip()
-                                st.write(f'{result}')
-                                
-                    except Exception as e:
-                        print(e)
-            if result == "I cannot answer the question given the context.":
-                st.write("Please try writing another question or select a question from the list.")
+        if st.button('Ask Impact Theory!'):
+
+            if st.session_state.typed_question:
+                query = st.session_state.typed_question
             else:
+                query = st.session_state.selected_question
+
+            
+
+        #st.radio(label="Suggested Questions", options=suggested_questions, key="selected_question")
+        #st.button(label="Ask Impact Theory Podcast", on_click=fill_suggested_question)
+
+        #st.write('\n\n\n\n\n')
+                    
+        #st.text_input('Enter your question: ',key="q")
+        #st.write('\n\n\n\n\n')
+
+        #if st.session_state.q:
+            if query: 
+            
+                #st.write('Hmmm...this app does not seem to be working yet.  Please check back later.')
+                #if guest:
+                #   st.write(f'However, it looks like you selected {guest} as a filter.')
+
+                # make hybrid call to weaviate
+                display_properties = ["title", "guest","summary","content","thumbnail_url",
+                                    "episode_url", "length","doc_id","views"]
+                hybrid_response = client.hybrid_search(query,
+                                                    class_name,
+                                                    alpha=alpha_input,
+                                                    display_properties=display_properties,
+                                                    where_filter=guest_filter,
+                                                    limit=retrieval_limit)
+                # rerank results
+                ranked_response = reranker.rerank(hybrid_response,
+                                                query,
+                                                apply_sigmoid=True,
+                                                top_k=reranker_topk)
+                # validate token count is below threshold
+                valid_response = validate_token_threshold(ranked_response,
+                                                        question_answering_prompt_series,
+                                                        query=query,
+                                                        tokenizer= encoding,
+                                                        token_threshold=4000, 
+                                                        verbose=True)
+            
+                # generate LLM prompt
+                prompt = generate_prompt_series(query=query, results=valid_response)
+                
+                # prep for streaming response
+                st.subheader("Response from Impact Theory (context)")
+                with st.spinner('Generating Response...'):
+                    st.markdown("----")
+                    #creates container for LLM response
+                    chat_container, response_box = [], st.empty()
+                    
+                    # execute chat call to LLM
+
+                    for resp in llm.get_chat_completion(prompt=prompt,
+                                                        temperature=temperature_input,
+                                                        max_tokens=500,
+                                                        show_response=True,
+                                                        stream=True):
+                        try:
+                            #inserts chat stream from LLM
+                            with response_box:
+                                content = resp.choices[0].delta.content
+                                if content:
+                                    chat_container.append(content)
+                                    result = "".join(chat_container).strip()
+                                    st.write(f'{result}')
+                                    
+                        except Exception as e:
+                            print(e)
+                if result == "I cannot answer the question given the context.":
+                    st.write("Please try writing another question or select a question from the list.")
+                else:
 
 
-                st.subheader("Search Results")
-                for i, hit in enumerate(valid_response):
-                    col1, col2 = st.columns([7, 3], gap='large')
-                    image = hit["thumbnail_url"]
-                    episode_url = hit["episode_url"]
-                    title = hit["title"]
-                    show_length = hit["length"]
-                    time_string = convert_seconds(show_length)
+                    st.subheader("Search Results")
+                    for i, hit in enumerate(valid_response):
+                        col1, col2 = st.columns([7, 3], gap='large')
+                        image = hit["thumbnail_url"]
+                        episode_url = hit["episode_url"]
+                        title = hit["title"]
+                        show_length = hit["length"]
+                        time_string = convert_seconds(show_length)
 
-                    with col1:
-                        st.write( search_result(  i=i, 
-                                                    url=episode_url,
-                                                    guest=hit['guest'],
-                                                    title=title,
-                                                    content=hit['content'], 
-                                                    length=time_string),
-                                                    unsafe_allow_html=True)
-                        st.write('\n\n')
+                        with col1:
+                            st.write( search_result(  i=i, 
+                                                        url=episode_url,
+                                                        guest=hit['guest'],
+                                                        title=title,
+                                                        content=hit['content'], 
+                                                        length=time_string),
+                                                        unsafe_allow_html=True)
+                            st.write('\n\n')
 
-                        with st.expander("Click Here for Guest Info:"):
-                            try:
-                                input = wikipedia.page(hit['guest'], auto_suggest=False)
-                                podcast_guest_info = input.summary
-                                st.write(podcast_guest_info)
-                            except Exception as e:
-                                print(e)
+                            with st.expander("Click Here for Guest Info:"):
+                                try:
+                                    input = wikipedia.page(hit['guest'], auto_suggest=False)
+                                    podcast_guest_info = input.summary
+                                    st.write(podcast_guest_info)
+                                except Exception as e:
+                                    print(e)
 
-                    with col2:
-                        # st.write(f"<a href={episode_url} <img src={image} width='200'></a>", 
-                        #             unsafe_allow_html=True)
-                        st.image(image, caption=title.split('|')[0], width=200, use_column_width=False)
+                        with col2:
+                            # st.write(f"<a href={episode_url} <img src={image} width='200'></a>", 
+                            #             unsafe_allow_html=True)
+                            st.image(image, caption=title.split('|')[0], width=200, use_column_width=False)
 
 if __name__ == '__main__':
     main()
